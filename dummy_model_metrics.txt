@@ -1,1 +1,1 @@
-timestamp: 2021-04-13T15:00:49, mean_squared_error: 0.8381248232854671
+mean_squared_error: 1.081868923890034
