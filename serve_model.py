@@ -17,7 +17,7 @@ class FeatureDataInstance(BaseModel):
 
 @app.post('/api/v1/', status_code=200)
 def predict(data: FeatureDataInstance):
-    """Generate predictions for data sent to the /predict/v1/ route."""
+    """Generate predictions for data sent to the /api/v1/ route."""
     prediction = model.predict([data.X])
     return {'y_pred': prediction[0]}
 
