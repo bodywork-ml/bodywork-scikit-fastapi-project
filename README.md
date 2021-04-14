@@ -1,25 +1,25 @@
 # Scikit-Learn, meet Production
 
-> “*Deploying something useless into production, as soon as you can, is the right way to start a new project. It pulls unknown risk forward, opens up parallel streams of work, and establishes good habits.*”  
+> “*Deploying something useless into production, as soon as you can, is the right way to start a new project. It pulls unknown risk forward, opens up parallel streams of work, and establishes good habits.*”
 
-This is a quote by [Pete Hodgson](https://blog.thepete.net/blog/2019/10/04/hello-production/), from his article ‘Hello, production’.  It in a nutshell, it explains the benefits of taking deployment pains early on in a software development project, and then using the initial deployment skeleton as the basis for quickly delivering useful functionality into production.
+This is a quote by [Pete Hodgson](https://blog.thepete.net/blog/2019/10/04/hello-production/), from his article ‘Hello, production’.  It in a nutshell, it explains the benefits of taking deployment pains early on in a software development project, and then using the initial deployment skeleton as the basis for rapidly delivering useful functionality into production.
 
 The idea of making an initial ‘Hello, production’ release has had a big influence on how we think about the development of machine learning systems. We’ve mapped ‘Hello, Production’ into the machine learning space, as follows,
 
-> *Train the simplest model possible and deploy it into production, as soon as you can.*
+> *Train the simplest model conceivable and deploy it into production, as soon as you can.*
 
-A reasonable ‘Hello, production’ model could be one that returns the most frequent class (for classification tasks), or the mean value (for regression tasks).  Scikit-Learn provides models for precisely this situation, in the `sklearn.dummy` sub-module. If the end-goal is to serve predictions via a web API, then the next step is to develop the server and deploy it into a production environment. Alternatively, if the model is going to be used as part of a batch process, then the next step is to develop the batch job and deploy that into production.
+A reasonable ‘Hello, production’ model could be one that returns the most frequent class (for classification tasks), or the mean value (for regression tasks).  Scikit-Learn provides models for precisely this situation, in the `sklearn.dummy` sub-module. If the end-goal is to serve predictions via a web API, then the next step is to develop the server and deploy it into a production environment. Alternatively, if the model is going to be used as part of a batch job, then the next step is to develop the job and deploy that into production.
 
-The advantage of following this process, is that is forces you to contend with the following issues very early on:
+The advantage of following this process, is that is forces you to confront the following issues early on:
 
 - Getting access to data.
 - Getting access to (or creating) production environments.
 - Defining the contract (or interface) with the consumers of the model’s output.
 - Creating deployment pipelines (manual or automated), to deliver your application into production.
 
-Each one of these issues is likely to involve input from people in other teams and is critical to overall success. Failure on any one of these can signal the end for a machine learning project, regardless of how well the models are performing. Success also demonstrates an ability to deliver functional software, which in our experience creates trust in your project and leads onto more time to experiment with training more complex model types.
+Each one of these issues is likely to involve input from people in other teams and is critical to overall success. Failure on any one of these can signal the end for a machine learning project, regardless of how well the models are performing. Success also demonstrates an ability to deliver functional software, which in our experience creates trust in a project, and often leads to more time being made available to experiment with training more complex model types.
 
-Bodywork is laser-focused on making the deployment of machine learning projects, to Kubernetes, quick and easy. In what follows, we are going to show you how to use Bodywork to deploy a ‘Hello, production’ release for a hypothetical prediction service, using Scikit-Learn and FastAPI. We claim that it will take your under 15 minutes to work through the 7 steps, which includes setting-up a local Kubernetes cluster for testing.
+Bodywork is laser-focused on making the deployment of machine learning projects, to Kubernetes, quick and easy. In what follows, we are going to show you how to use Bodywork to deploy a ‘Hello, production’ release for a hypothetical prediction service, using Scikit-Learn and FastAPI. We claim that it will take your under 15 minutes to work through the steps below, which includes setting-up a local Kubernetes cluster for testing.
 
 ## Step 0 - Before we get Started
 
@@ -68,7 +68,7 @@ $ minikube stop
 
 Head over to GitHub and create a new public repository for this project - we called ours [bodywork-scikit-fastapi-project](https://github.com/bodywork-ml/bodywork-scikit-fastapi-project). If you want to use Bodywork with private repos, you’ll have to configure Bodywork to authenticate with GitHub via SSH. The [Bodywork User Guide](https://bodywork.readthedocs.io/en/latest/user_guide/#working-with-private-git-repositories-using-ssh) contains details on how to do this, but we recommend that you come back to this at a later date and continue with a public repository for now.
 
-Clone your new repository locally,
+Next, clone your new repository locally,
 
 ```shell
 $ git clone https://github.com/bodywork-ml/bodywork-scikit-fastapi-project.git
@@ -133,7 +133,7 @@ with open('dummy_model_metrics.txt', 'w') as f:
 
 ## Step 3 - Develop a web API using FastAPI
 
-The ultimate aim for our chosen machine learning system, is to serve predictions via a web API. Consequently, our initial ‘Hello, production’ release will need us to develop a skeleton web service that exposes the dummy model trained in Step 2. This is achieved in a Python module we’ve named `serve_model.py` , reproduced below, which you should add to your project.
+The ultimate aim for our chosen machine learning system, is to serve predictions via a web API. Consequently, our initial ‘Hello, production’ release will need us to develop a skeleton web service that exposes the dummy model trained in Step 2. This is achieved in a Python module we’ve named `serve_model.py` , reproduced below, which you should also add to your project.
 
 This module loads the trained model created in Step 2 and then configures [FastAPI](https://fastapi.tiangolo.com) to start a server with an HTTP endpoint at `/api/v1/`. Instances of data, serialised as JSON,  can be sent to this endpoint as HTTP POST requests. The schema for the JSON data payload is defined by the `FeatureDataInstanace` class, which for our example only expects a single `float` field named `X`. For more information on defining JSON schemas using Pydantic and FastAPI, see the [FastAPI docs](https://fastapi.tiangolo.com/tutorial/body/).
 
@@ -253,7 +253,7 @@ $ bodywork workflow \
     main
 ```
 
-This will orchestrate deployment on your cluster and stream the logs to your terminal. Refer to the [Bodywork User guide](https://bodywork.readthedocs.io/en/latest/user_guide/#deploying-workflows)  to run the workflow-controller remotely,
+This will orchestrate deployment on your cluster and stream the logs to your terminal. Refer to the [Bodywork User guide](https://bodywork.readthedocs.io/en/latest/user_guide/#deploying-workflows)  to run the workflow-controller remotely.
 
 ## Step 7 - Test the Prediction API
 
@@ -266,21 +266,15 @@ Once the deployment has completed, the prediction service will be ready for test
 Such that we can make a request for a prediction using,
 
 ```shell
-curl http://CLUSTER_IP/bodyworkml/bodywork-scikit-fastapi-project--scoring-service/api/v1/ \
+$ curl http://CLUSTER_IP/bodyworkml/bodywork-scikit-fastapi-project--scoring-service/api/v1/ \
     --request POST \
     --header "Content-Type: application/json" \
     --data '{"X": 42}'
+
+{"y_pred": 0.0781994319124968}
 ```
 
-Which will return the same value when testing the service earlier on.
-
-```json
-{
-    "y_pred": 0.0781994319124968
-}
-```
-
-Congratulations, you have just deployed your ‘Hello, production’ release!
+Returning the same value we got when testing the service earlier on. Congratulations, you have just deployed your ‘Hello, production’ release!
 
 ## Where to go from here
 
@@ -289,3 +283,7 @@ If you used Minikube to test Bodywork locally, then the next logical step would 
 If a web service isn’t a suitable ‘Hello, production’ release for your project, then check out the [Deployment Templates](https://bodywork.readthedocs.io/en/latest/template_projects/) for other project types that may be a better fit - e.g. batch jobs or Jupyter notebook pipelines.
 
 When your ‘Hello, production’ release is operational and available within your organisation, it’s then time to start thinking about monitoring your service and collecting data to enable the training of the next iteration. Godspeed!
+
+## Getting Help
+
+If you run into any trouble, then don't hesitate to ask a question on our [discussion board](https://github.com/bodywork-ml/bodywork-core/discussions) and we'll step-in to help you out.
