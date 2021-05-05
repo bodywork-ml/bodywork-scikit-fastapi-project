@@ -29,7 +29,7 @@ Deploying machine learning projects using Bodywork requires you to have a [GitHu
 
 If you don’t have access to a Kubernetes cluster, then an easy way to get started is with [Minikube](https://minikube.sigs.k8s.io/docs/). If you are running on MacOS and with the [Homebrew](https://brew.sh) package manager available, then installing Minikube is as simple as running,
 
-```shell
+```text
 $ brew install minikube
 ```
 
@@ -37,19 +37,19 @@ If you’re running on Windows or Linux, then see the appropriate [installation 
 
 Once you have Minikube installed, start a cluster using the latest version of Kubernetes that Bodywork supports,
 
-```shell
+```text
 $ minikube start --kubernetes-version=v1.16.15
 ```
 
 And then enable ingress, so we can route HTTP requests to services deployed using Bodywork.
 
-```she’ll
+```text
 $ minikube addons enable ingress
 ```
 
 You’ll also need the cluster’s IP address, which you can get using,
 
-```shell
+```text
 $ minikube profile list
 |----------|-----------|---------|--------------|------|----------|---------|-------|
 | Profile  | VM Driver | Runtime |      IP      | Port | Version  | Status  | Nodes |
@@ -60,7 +60,7 @@ $ minikube profile list
 
 When you’re done with this tutorial, the cluster can be powered-down using.
 
-```shell
+```text
 $ minikube stop
 ```
 
@@ -70,13 +70,13 @@ Head over to GitHub and create a new public repository for this project - we cal
 
 Next, clone your new repository locally,
 
-```shell
+```text
 $ git clone https://github.com/bodywork-ml/bodywork-scikit-fastapi-project.git
 ```
 
 Create a dedicated Python 3.8 virtual environment in the root directory, and the activate it,
 
-```shell
+```text
 $ cd bodywork-scikit-fastapi-project
 $ python3.8 -m venv .venv
 $ source .venv/bin/activate
@@ -84,14 +84,14 @@ $ source .venv/bin/activate
 
 Finally, install the packages required for this project, as shown below,
 
-```shell
+```text
 $ pip install \
     bodywork==2.0.2 \
-	scikit-learn==0.24.1 \
-	numpy==1.20.2 \
-	joblib==1.0.1 \
-	fastapi==0.63.0 \
-	uvicorn==0.13.4 
+  	scikit-learn==0.24.1 \
+  	numpy==1.20.2 \
+  	joblib==1.0.1 \
+  	fastapi==0.63.0 \
+  	uvicorn==0.13.4 
 ```
 
 Then open-up an IDE to continue developing the service.
@@ -165,7 +165,7 @@ if __name__ == '__main__':
 
 Test the service locally by running `serve_model.py` ,
 
-```shell
+```text
 $ python serve_model.py
 INFO:     Started server process [51987]
 INFO:     Waiting for application startup.
@@ -175,7 +175,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 
 And then in a new terminal, send the endpoint some data using `curl`,
 
-```shell
+```text
 $ curl http://localhost:8000/predict/v1/ \
     --request POST \
     --header "Content-Type: application/json" \
@@ -228,7 +228,7 @@ Refer to the [Bodywork User Guide](https://bodywork.readthedocs.io/en/latest/use
 
 The project is now ready to deploy, so the files must be committed and pushed to the remote repository we created on GitHub.
 
-```shell
+```text
 $ git add -A
 $ git commit -m "Initial commit."
 $ git push origin main
@@ -240,13 +240,13 @@ When triggered, Bodywork will clone the remote repository directly from GitHub, 
 
 The first thing we need to do, is to create and setup a Kubernetes [namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) for our deployment. A namespace can be thought of as a virtual cluster (within the cluster), where related resources can be grouped together. Use the Bodywork CLI to do this,
 
-```shell
+```text
 $ bodywork setup-namespace bodyworkml
 ```
 
 The easiest way to run your first deployment, is to execute the Bodywork workflow-controller locally,
 
-```shell
+```text
 $ bodywork workflow \
     --namespace=bodyworkml \
     https://github.com/bodywork-ml/bodywork-scikit-fastapi-project.git \
@@ -265,7 +265,7 @@ Once the deployment has completed, the prediction service will be ready for test
 
 Such that we can make a request for a prediction using,
 
-```shell
+```text
 $ curl http://CLUSTER_IP/bodyworkml/bodywork-scikit-fastapi-project--scoring-service/api/v1/ \
     --request POST \
     --header "Content-Type: application/json" \
