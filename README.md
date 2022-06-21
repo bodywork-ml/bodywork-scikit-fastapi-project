@@ -23,7 +23,7 @@ Bodywork is laser-focused on making the deployment of machine learning projects,
 
 ## Step 0 - Before we get Started
 
-Deploying machine learning projects using Bodywork requires you to have a [GitHub](https://github.com) account, Python 3.8 installed on your local machine and access to a [Kubernetes](https://en.wikipedia.org/wiki/Kubernetes) cluster. If you already have access to Kubernetes, then skip to Step 1, otherwise read-on to setup a single node Kubernetes cluster on your local machine, using Minikube.
+Deploying machine learning projects using Bodywork requires you to have a [GitHub](https://github.com) account, Python 3.9 installed on your local machine and access to a [Kubernetes](https://en.wikipedia.org/wiki/Kubernetes) cluster. If you already have access to Kubernetes, then skip to Step 1, otherwise read-on to setup a single node Kubernetes cluster on your local machine, using Minikube.
 
 ### Minikube - Kubernetes for your Laptop
 
@@ -38,24 +38,7 @@ If you’re running on Windows or Linux, then see the appropriate [installation 
 Once you have Minikube installed, start a cluster using the latest version of Kubernetes that Bodywork supports,
 
 ```text
-$ minikube start --kubernetes-version=v1.16.15
-```
-
-And then enable ingress, so we can route HTTP requests to services deployed using Bodywork.
-
-```text
-$ minikube addons enable ingress
-```
-
-You’ll also need the cluster’s IP address, which you can get using,
-
-```text
-$ minikube profile list
-|----------|-----------|---------|--------------|------|----------|---------|-------|
-| Profile  | VM Driver | Runtime |      IP      | Port | Version  | Status  | Nodes |
-|----------|-----------|---------|--------------|------|----------|---------|-------|
-| minikube | hyperkit  | docker  | 192.168.64.5 | 8443 | v1.16.15 | Running |     1 |
-|----------|-----------|---------|--------------|------|----------|---------|-------|
+$ minikube start --kubernetes-version=v1.22.6 --addons=ingress --cpus=2 --memory=2g
 ```
 
 When you’re done with this tutorial, the cluster can be powered-down using.
@@ -66,7 +49,7 @@ $ minikube stop
 
 ## Step 1 - Create a new GitHub Repository for the Project
 
-Head over to GitHub and create a new public repository for this project - we called ours [bodywork-scikit-fastapi-project](https://github.com/bodywork-ml/bodywork-scikit-fastapi-project). If you want to use Bodywork with private repos, you’ll have to configure Bodywork to authenticate with GitHub via SSH. The [Bodywork User Guide](https://bodywork.readthedocs.io/en/latest/user_guide/#working-with-private-git-repositories-using-ssh) contains details on how to do this, but we recommend that you come back to this at a later date and continue with a public repository for now.
+Head over to GitHub and create a new public repository for this project - we called ours [bodywork-scikit-fastapi-project](https://github.com/bodywork-ml/bodywork-scikit-fastapi-project). If you want to use Bodywork with private repos, you’ll have to configure Bodywork to authenticate with GitHub via SSH. The [Bodywork User Guide](https://bodywork.readthedocs.io/en/latest/user_guide/#private-git-repositories) contains details on how to do this, but we recommend that you come back to this at a later date and continue with a public repository for now.
 
 Next, clone your new repository locally,
 
@@ -74,11 +57,11 @@ Next, clone your new repository locally,
 $ git clone https://github.com/bodywork-ml/bodywork-scikit-fastapi-project.git
 ```
 
-Create a dedicated Python 3.8 virtual environment in the root directory, and the activate it,
+Create a dedicated Python 3.9 virtual environment in the root directory, and the activate it,
 
 ```text
 $ cd bodywork-scikit-fastapi-project
-$ python3.8 -m venv .venv
+$ python3.9 -m venv .venv
 $ source .venv/bin/activate
 ```
 
@@ -190,8 +173,8 @@ Which confirms that the service is working as expected.
 All configuration for Bodywork deployments must be kept in a [YAML](https://en.wikipedia.org/wiki/YAML) file, named `bodywork.yaml` and stored in the project’s root directory.  The `bodywork.yaml` required to deploy our ‘Hello, production’ release is reproduced below - add this file to your project.
 
 ```yaml
-version: "1.0"
-project:
+version: "1.1"
+pipeline:
   name: bodywork-scikit-fastapi-project
   docker_image: bodyworkml/bodywork-core:latest
   DAG: scoring-service
@@ -205,10 +188,10 @@ stages:
       - scikit-learn==0.24.1
       - uvicorn==0.13.4
     cpu_request: 0.5
-    memory_request_mb: 100
+    memory_request_mb: 250
     service:
-      max_startup_time_seconds: 30
-      replicas: 1
+      max_startup_time_seconds: 120
+      replicas: 2
       port: 8000
       ingress: true
 logging:
@@ -238,35 +221,32 @@ When triggered, Bodywork will clone the remote repository directly from GitHub, 
 
 ## Step 6 - Deploy to Kubernetes
 
-The first thing we need to do, is to create and setup a Kubernetes [namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) for our deployment. A namespace can be thought of as a virtual cluster (within the cluster), where related resources can be grouped together. Use the Bodywork CLI to do this,
+The easiest way to run your first deployment, is to execute the Bodywork create deployment command,
 
 ```text
-$ bodywork setup-namespace bodyworkml
+$ bodywork create deployment https://github.com/bodywork-ml/bodywork-scikit-fastapi-project.git
 ```
 
-The easiest way to run your first deployment, is to execute the Bodywork workflow-controller locally,
-
-```text
-$ bodywork workflow \
-    --namespace=bodyworkml \
-    https://github.com/bodywork-ml/bodywork-scikit-fastapi-project.git \
-    main
-```
-
-This will orchestrate deployment on your cluster and stream the logs to your terminal. Refer to the [Bodywork User guide](https://bodywork.readthedocs.io/en/latest/user_guide/#deploying-workflows)  to run the workflow-controller remotely.
+This will orchestrate deployment on your cluster and stream the logs to your terminal.
 
 ## Step 7 - Test the Prediction API
 
 Once the deployment has completed, the prediction service will be ready for testing. Bodywork will create ingress routes to your endpoint using the following scheme:
 
 ```md
-/K8S_NAMESPACE/PROJECT_NAME--STAGE_NAME/
+/PIPELINE_NAME/STAGE_NAME/
+```
+
+To open an access route to the cluster for testing, open an new terminal and run,
+
+```text
+$ minikube kubectl -- -n ingress-nginx port-forward service/ingress-nginx-controller 8080:80
 ```
 
 Such that we can make a request for a prediction using,
 
 ```text
-$ curl http://CLUSTER_IP/bodyworkml/bodywork-scikit-fastapi-project--scoring-service/api/v1/ \
+$ curl http://localhost:8080/bodywork-scikit-fastapi-project/scoring-service/api/v1/ \
     --request POST \
     --header "Content-Type: application/json" \
     --data '{"X": 42}'
