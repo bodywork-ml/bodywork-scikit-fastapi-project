@@ -237,7 +237,7 @@ Once the deployment has completed, the prediction service will be ready for test
 /PIPELINE_NAME/STAGE_NAME/
 ```
 
-To open an access route to the cluster for testing, open an new terminal and run,
+To open an access route to the cluster for testing, start a new terminal and run,
 
 ```text
 $ minikube kubectl -- -n ingress-nginx port-forward service/ingress-nginx-controller 8080:80
